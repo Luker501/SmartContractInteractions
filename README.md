@@ -1,5 +1,5 @@
-# SmartContractInteractions
-Lists examples of all the ways two smart contracts written in Solidity can interact.
+# Smart Contract Interactions
+This folder lists examples of all the ways two smart contracts written in Solidity can interact.
 
 I have identified 6 different ways two smart contracts can interact, listed in the table below. There are examples of each type in the CallingContract.sol file. 
 
