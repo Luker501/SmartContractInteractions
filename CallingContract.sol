@@ -74,6 +74,10 @@ contract CallingContract {
       //therefore a require function has been added to propagate an exception
       //if one is found (when the return is false)
       require(addressOfContract.delegatecall.gas(30000)(bytes4(keccak256("helloFunction()"))) == true);
+      //A deprecated version of delegate call is as follows (the only difference is that callcode
+      //does not preserve msg.sender and msg.value if there are a chain of multiple smart contract delegations):
+      //require(addressOfContract.callcode.gas(30000)(bytes4(keccak256("helloFunction()"))) == true);
+ 
       
   }
 
