@@ -1,16 +1,13 @@
 # Smart Contract Interactions
-This folder lists examples of all the ways two smart contracts written in Solidity can interact.
-
-I have identified 6 different ways two smart contracts can interact, described and compared below. There are examples of each type in the CallingContract.sol file. 
-
-More detailed description on each invocation type will follow in the future.
-
-## Different Solidity Invocations
+This folder lists examples of all the ways two smart contracts written in Solidity can interact, as well as some common problems solidity programmers come across. 
 
 
-Given a smart contract s^i, there are a few different ways s^i can invoke and interact with another smart contract s^j. We have categorised these invocation methods and listed them below. Afterwards we will discuss the differences between them, where are summary of the comparison is displayed in Table~\ref{tab:electionResults}. 
 
-Note that in the following we use `<ContractType>`, `<langle ContractName>`, `<FunctionName>`, `<ContractAddress>` and `<Recipient>` as placeholders.
+## Different Smart Contract Invocations
+
+Given a smart contract s^i, there are six different ways s^i can invoke and interact with another smart contract s^j. I will describe these six different invocation categories below.
+
+Note that in the following I use `<ContractType>`, `<langle ContractName>`, `<FunctionName>`, `<ContractAddress>` and `<Recipient>` as placeholders.
 
 * __Direct Invocation__  new `<ContractType>` __or__ `<langle ContractName>`.`<FunctionName>` -  This invocation method is the most simple way for smart contract s^i to interact with a function f^x in smart contract s^j. If f^x happens to be contract s^j's constructor, this is implicitly called through the new keyword followed by a reference to the type of s^j. Otherwise if f^x is not a constructor,  s^i must have already instantiated a variable representing s^j through prior knowledge of `<ContractAddress>`. 
 
@@ -25,7 +22,11 @@ Note that in the following we use `<ContractType>`, `<langle ContractName>`, `<F
 * __Self Destruct__ `<ContractAddress>`.selfdestruct(`<Recipient>`) __or__ `<ContractAddress>`.suicide(`<Recipient>`) - This invocation method allows smart contract s^i to forceably send ether to the recipient smart contract s^j even if no fallback is implemented in s^j. Note that suicide is a depreciated alias of selfdestruct.
 
 
-See CallingContract.sol for examples of all of these invocation methods. 
+See CallingContract.sol for examples of all of these invocation methods.
+
+
+## Smart Contract Invocation Comparison
+
 We will now discuss the comparison between the invocation methods according to different criteria, where the discussion is summarised in the following table:
 
 ![Invocation comparison](InovationTable.png)
@@ -41,3 +42,15 @@ We will now discuss the comparison between the invocation methods according to d
 * __Ether sent to called contract__ - The send and transfer invocations require an explicit ether amount to be given. Whereas the direct and low level call invocations allow ether to be optionally sent.
 The delegation invocation does not allow ether to be passed on, as giving ether via the delegation invocation is effectively giving ether to yourself due to the way contract storage is manipulated in this invocation. Finally, self destruct forces the contract to pass on all remaining ether to a given address. 
 
+## Common Solidity Programming Issues
+
+Programmers unfamiliar with solidity can be caught out by the following two issues relating to the flow of code execution:
+
+
+* __Possibly of Re-entry__: When a smart contract s^i's function f^x calls another function f^y, the rest of function f^x is effectively paused until f^y completes. This can be an issue if f^x wants to make some state changes after f^y completes and f^y resides in a different smart contract s^j (which could have been created by a malicious individual). In this case f^y can attempt to exploit the fact that f^x is on pause, by calling functions in s^i to take advantage of the fact that f^x has not made all of its state changes yet.
+
+The withdraw() function in [this solidity file](https://github.com/Luker501/SmartContractInteractions/blob/master/Code%20Examples/Re-Entry/ContractForReentry.sol) contains an example of how a re-entry attack can occur. In this example, a user withdraws their shares, which is processed by the low level call invocation and the corresponding ether is sent to the user's address. If the user's address is a smart contract, this smart contract can re-call the withdraw() function to take more ether out of the contract than is placed in the user's account. This attack can occur because: (i) the user's account is only set to zero after the low level call invocation occurs; and (ii) this low level call invocation has forwarded all remaining gas to the called contract. To fix this issue, the programmer should have set the user's account to zero value before the ether was send to the user.
+
+* __No Error Propagation__: Some smart contract invocations propagate errors through the entire call stack while other invocations will instead return false if an error occurs. This can cause an issue if a programmer codes in a manner that expects all smart contract invocations to revert on failure. 
+
+The becomeKing() function in [this solidity file](https://github.com/Luker501/SmartContractInteractions/blob/master/Code%20Examples/UncheckedErrorPropagation/ContractForUncheckedReturn.sol) contains an example of how not checking for error propagations can cause an application issue. In this example, a user bids ether to become the new king. If the user outbids the current king, then the user becomes the new king and the old king is paid some compensation. In this example a  send invocation is used to give the old king compensation. The send invocation only  allows for a small amount of gas to be used, meaning that if the old king is a smart contract that attempts to perform function calls after receiving ether, then this send invocation will fail. Crucially, there is no check in the becomeKing() function for if the send invocation fails. To fix this issue, another function could have been used for compensation requests from old kings where the compensation is made through the low level call invocation, as in the previous example.
