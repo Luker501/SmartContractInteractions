@@ -1,14 +1,9 @@
 # Smart Contract Interactions
 This folder lists examples of all the ways two smart contracts written in Solidity can interact.
 
-I have identified 6 different ways two smart contracts can interact, listed in the table below. There are examples of each type in the CallingContract.sol file. 
-
-We can compare the 6 invocation types using through the following table:
-
-![Invocation comparison](SolidityInvocations.png)
+I have identified 6 different ways two smart contracts can interact, described and compared below. There are examples of each type in the CallingContract.sol file. 
 
 More detailed description on each invocation type will follow in the future.
-
 
 ## Different Solidity Invocations
 
@@ -31,7 +26,9 @@ Note that in the following we use `<ContractType>`, `<langle ContractName>`, `<F
 
 
 See CallingContract.sol for examples of all of these invocation methods. 
-We will now discuss the comparison between the invocation methods according to different criteria, where the discussion is summarised in the table at the end.
+We will now discuss the comparison between the invocation methods according to different criteria, where the discussion is summarised in the following table:
+
+![Invocation comparison](InovationTable.png)
 
 * __Can Set Gas Limit__ - Which invocation methods allow an explicit gas limit (for the called contract) to be set by the programmer? This is an optional feature for the direct, low level call and delegation invocations. The send and transfer invocations have a preset gas limit. Whereas no additional gas is needed for the self destruct invocation - instead users are "rewarded" for self-destructing their contracts with a negative gas cost for using this invocation. A reward is given because after a self destruct invocation is used, the code and storage of the destructed contract are removed from the ethereum virtual machine going forward. Note that nodes with access to the block where the contract was originally deployed will still be able to recover the contract's associated bytecode, so the concept of destruction is different from complete removal.
 
