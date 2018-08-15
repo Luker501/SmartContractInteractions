@@ -33,6 +33,8 @@ contract CallingContract {
       CalledContract newContract = CalledContract(addressOfContract);
       newContract.callMeFunction();
       //if you want to pass through ether to the function, do:
+      //newContract.callMeFunction.value(msg.value)();
+      //if you additionally want to set a gas limit do, do:
       //newContract.callMeFunction.value(msg.value).gas(200000)();
     
   }
