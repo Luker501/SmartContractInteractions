@@ -7,9 +7,9 @@ This folder lists examples of all the ways two smart contracts written in Solidi
 
 Given a smart contract s^i, there are six different ways s^i can invoke and interact with another smart contract s^j. I will describe these six different invocation categories below.
 
-Note that in the following I use `<ContractType>`, `<langle ContractName>`, `<FunctionName>`, `<ContractAddress>` and `<Recipient>` as placeholders.
+Note that in the following I use `<ContractType>`, `<ContractName>`, `<FunctionName>`, `<ContractAddress>` and `<Recipient>` as placeholders.
 
-* __Direct Invocation__  new `<ContractType>` __or__ `<langle ContractName>`.`<FunctionName>` -  This invocation method is the most simple way for smart contract s^i to interact with a function f^x in smart contract s^j. If f^x happens to be contract s^j's constructor, this is implicitly called through the new keyword followed by a reference to the type of s^j. Otherwise if f^x is not a constructor,  s^i must have already instantiated a variable representing s^j through prior knowledge of `<ContractAddress>`. 
+* __Direct Invocation__  new `<ContractType>` __or__ `<ContractName>`.`<FunctionName>` -  This invocation method is the most simple way for smart contract s^i to interact with a function f^x in smart contract s^j. If f^x happens to be contract s^j's constructor, this is implicitly called through the new keyword followed by a reference to the type of s^j. Otherwise if f^x is not a constructor,  s^i must have already instantiated a variable representing s^j through prior knowledge of `<ContractAddress>`. 
 
 * __Low Level Call Invocation__ `<ContractAddress>`.call(...) - This invocation method  allows smart contract s^i to invoke any function of smart contract s^j. It is more complex than a direct invocation as the programmer needs to enter the function name and parameters types via string input and so no complie time checks can be made on if they are correct. If the programmer does not enter a valid function name and parameter types then the fallback function of s^j is called (if it exists).
 
