@@ -5,7 +5,7 @@ This folder lists examples of all the ways two smart contracts written in Solidi
 
 ## Different Smart Contract Invocations
 
-Given a smart contract s^i, there are six different ways s^i can invoke and interact with another smart contract s^j. I will describe these six different invocation categories below.
+Given a smart contract s^i, there are six different ways s^i can invoke and interact with another smart contract s^j. I will describe these six different invocation categories below and there are coded examples in the CallingContract.sol file.
 
 Note that in the following I use `<ContractType>`, `<ContractName>`, `<FunctionName>`, `<ContractAddress>` and `<Recipient>` as placeholders.
 
