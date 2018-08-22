@@ -11,15 +11,15 @@ Note that in the following I use `<ContractType>`, `<ContractName>`, `<FunctionN
 
 * __Direct Invocation__: *new* `<ContractType>` __or__ `<ContractName>`.`<FunctionName>` -  This invocation method is the most simple way for smart contract s<sup>p</sup> to interact with a function f<sup>x</sup> in smart contract s<sup>q</sup>. If f<sup>x</sup> is contract s<sup>q</sup>'s constructor, then it is called through the *new* keyword followed by a reference to the `<ContractType>` of s<sup>q</sup>. Otherwise if f<sup>x</sup> is not a constructor,  s<sup>p</sup> must have already instantiated a `<ContractName>` variable representing s<sup>q</sup> through prior knowledge of the `<ContractAddress>` of s<sup>q</sup>. 
 
-* __Low Level Call Invocation__: `<ContractAddress>`*.call(...)* - This invocation method  allows smart contract s<sup>p</sup> to invoke any function of smart contract s<sup>q</sup>. It is more complex than a direct invocation as the programmer needs to enter the function name and parameters types via string input and so no complie time checks can be made on if they are correct. If the programmer does not enter a valid function name and/or parameter types, then the fallback function of s<sup>q</sup> is called (if it exists).
+* __Low Level Call Invocation__: `<ContractAddress>`*.call(...)* - This invocation method  allows smart contract s<sup>p</sup> to invoke any function of smart contract s<sup>q</sup>. It is more complex than a direct invocation as the programmer needs to enter the function name and parameters types via string input and so no complie time checks can be made on if they are correct. If the programmer does not enter a valid function name and/or parameter types, then the fallback function of s<sup>q</sup> is called (if it exists). The advantage of using this invocation over a direct invocation is that the programmer does not have to have access to the solidity or ABI of the smart contract s<sup>q</sup>. 
 
 *  __Delegation__: `<ContractAddress>`*.delegatecall(...)* __or__ `<ContractAddress>`*.callcode(...)* -  This invocation method allows smart contract s<sup>p</sup> to invoke any function of smart contract s<sup>q</sup> but for the function to operate over s<sup>p</sup>'s storage. Therefore *delegatecall*s are a security risk and require s<sup>p</sup> to trust s<sup>q</sup>. Note that *delegatecall* can be seen as a bug fix of *callcode* as *callcode* does not preserve msg.sender when a smart contract s<sup>p</sup> delegates to another smart contract s<sup>q</sup>. That is, if *callcode* was used s<sup>q</sup> would have s<sup>p</sup> as msg.sender, but if *delegatecall* was used s<sup>q</sup> would still have access to the msg.sender of s<sup>p</sup>.  
 
-* __Send__: `<ContractAddress>`*.send(...)* - This invocation method allows smart contract s<sup>p</sup> to *send* ether to recipient smart contract s<sup>q</sup> as long as s<sup>q</sup> has a fallback function implemented.
+* __Send__: `<ContractAddress>`*.send(...)* - This invocation method allows smart contract s<sup>p</sup> to *send* ether to recipient smart contract s<sup>q</sup> as long as s<sup>q</sup> has a payable fallback function implemented.
 
-* __Transfer__: `<ContractAddress>`*.transfer(...)* - This invocation method allows smart contract s<sup>p</sup> to *transfer* ether to recipient  smart contract s<sup>q</sup> as long as s<sup>q</sup> has a fallback function implemented.  *Transfer* is logically the same as the *send* invocation apart from *transfer* reverts on failure.
+* __Transfer__: `<ContractAddress>`*.transfer(...)* - This invocation method allows smart contract s<sup>p</sup> to *transfer* ether to recipient  smart contract s<sup>q</sup> as long as s<sup>q</sup> has a payable fallback function implemented.  *Transfer* is logically the same as the *send* invocation apart from *transfer* reverts on failure.
 
-* __Self Destruct__: *selfdestruct(*`<ContractAddress>`*)* __or__ *suicide(*`<ContractAddress>`*)* - This invocation method allows smart contract s<sup>p</sup> to forceably send ether to the recipient smart contract s<sup>q</sup> even if no fallback is implemented in s<sup>q</sup>. Note that *suicide* is a depreciated alias of *selfdestruct*.
+* __Self Destruct__: *selfdestruct(*`<ContractAddress>`*)* __or__ *suicide(*`<ContractAddress>`*)* - This invocation method allows smart contract s<sup>p</sup> to forceably send ether to the recipient smart contract s<sup>q</sup> even if no payable fallback is implemented in s<sup>q</sup>. Note that *suicide* is a depreciated alias of *selfdestruct*.
 
 
 See CallingContract.sol for examples of all of these invocation methods.
@@ -35,12 +35,28 @@ I will now discuss the comparison between the invocation categories according to
 
 * __Gas Limit__ - There are currently explicit gas limits for send and transfer, set at 2300 each. While the direct, low level call and delegation invocations can accept all remaining  gas from the calling function or an explicit amount. Whereas self destruct uses negative gas for reasons described previously. Note that all of the direct, low level call and delegation invocations could allow reentrancy into the original contract's functions and/or storage, either by design (delegation) or as a by-product of allowing flexible gas limits (direct and low level call).
 
-* __Return value if error occurs__ - After each invocation, what happens if there is an error? For direct and transfer invocations, they will both throw an error. Whereas the low level call, delegation and send invocation will only return false, hence if you want to propagate errors from these invocations, they should be wrapped in a require function. Finally, the self destruct invocation does not return a value or throw an error - as there is no contract left to return or throw anything.
+* __Return value if error occurs__ - After each invocation, what happens if there is an error? For direct and transfer invocations, they will both throw an error. Whereas the low level call, delegation and send invocation will only return false, hence if you want to propagate errors from these invocations, they should be wrapped in a require function. Finally, the self destruct invocation does not return a value or throw an error - as there is no contract left to return or throw anything. Also note that low level call and delegation invocations will return true, even if there is no smart contract at the given address. While it is not classified as an error if the send and transfer invocations are given an address that does not correspond to a currently generated one.
 
 * __Storage used__ - After the invocation, whose storage can be changed in the called contract's function? The direct and low level call invocations operate in the more natural way where the called contract can only change it's own storage. The delegation invocation is more complicated as it allows the called contract's functions to change the storage of the original contract. The send and transfer invocations do not provide enough gas to allow the called contract to make any state changes. Whereas the self-destruct invocation removes the storage of the contract performing the invocation.
 
 * __Ether sent to called contract__ - The send and transfer invocations require an explicit ether amount to be given. Whereas the direct and low level call invocations allow ether to be optionally sent.
 The delegation invocation does not allow ether to be passed on, as giving ether via the delegation invocation is effectively giving ether to yourself due to the way contract storage is manipulated in this invocation. Finally, self destruct forces the contract to pass on all remaining ether to a given address. 
+
+## OpCode Mappings
+
+Solidity smart contracts are complied down to opcodes to be run on the Ethereum Virtual Machine. In this section I will discuss what opcodes are used for each invocation type.
+
+* __Direct Invocation__: To create a new contract the *CREATE* opcode is used. To call a function of another contract the *CALL* opcode is used. Another opcode being introduced is *STATICCALL*, to be used when the called function is read only (indicated via the 'view' or the deprecated 'constant' keyword). 
+
+* __Low Level Call Invocation__: Uses the *CALL* opcode.
+
+*  __Delegation__: Delegatecall maps directly to the *DELEGATECALL* opcode, whereas CallCode maps directly onto the *CALLCODE* opcode.
+
+* __Send__: Uses the *CALL* opcode.
+
+* __Transfer__: Uses the *CALL* opcode.
+
+* __Self Destruct__: Selfdestruct maps directly to the *SELFDESTRUCT* opcode. Suicide previously mapped directly to the *SUICIDE* opcode, but this has since been renamed as *SELFDESTRUCT*.
 
 ## Common Solidity Programming Issues
 
