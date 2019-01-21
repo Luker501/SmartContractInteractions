@@ -1,4 +1,4 @@
-pragma solidity ^0.4.20;
+pragma solidity ^0.5.0;
 import "./CalledContract.sol";
 
 /*
@@ -20,7 +20,7 @@ contract CallingContract {
       
       CalledContract newContract = new CalledContract();
       //If you want to pass through ether in the constructor, do:
-      //newContract = (new CalledContract).value(msg.value)(); 
+      //CalledContract newContract = (new CalledContract).value(msg.value)(); 
 
   }
   
@@ -28,7 +28,7 @@ contract CallingContract {
   * @notice Loads a contract and calls a function on it
   * @param addressOfContract - The address of the contract to interact with
   */
-  function DirectInvocationB(address addressOfContract) public payable {
+  function DirectInvocationB(address payable addressOfContract) public payable {
       
       CalledContract newContract = CalledContract(addressOfContract);
       newContract.callMeFunction();
@@ -44,12 +44,13 @@ contract CallingContract {
   * @param addressOfContract - The address of the contract to interact with
   * @param msg.value - The ether the user wants to give to the contract at addressOfContract
   */
-  function LowLevelCallInvocationA(address addressOfContract) public payable {
+  function LowLevelCallInvocationA(address payable addressOfContract) public payable {
       
       //A low level call does not propagate exceptions, 
       //therefore a require function has been added to propagate an exception
       //if one is found (when the return is false)
-      require(addressOfContract.call.value(msg.value).gas(200000)() == true);
+      (bool success, bytes memory data) = addressOfContract.call.value(msg.value).gas(200000)("");
+      require(success == true);
       
   }
   
@@ -65,7 +66,8 @@ contract CallingContract {
       //A low level call does not propagate exceptions, 
       //therefore a require function has been added to propagate an exception
       //if one is found (when the return is false)
-      require(addressOfContract.call.value(msg.value).gas(600000)(bytes4(keccak256("callMeFunction()"))) == true);
+      (bool success, bytes memory data) = addressOfContract.call.value(msg.value).gas(600000)(abi.encodeWithSignature("callMeFunction()"));
+      require(success == true);
       
   }
 
@@ -75,14 +77,13 @@ contract CallingContract {
   * by the helloFunction() will be the one in this contract
   * @param addressOfContract - The address of the contract to interact with
   */
-  function DelegationInvocation(address addressOfContract) public payable {
+  function DelegationInvocation(address payable addressOfContract) public payable {
 
       //A delegation does not propagate exceptions, 
       //therefore a require function has been added to propagate an exception
       //if one is found (when the return is false)
-      require(addressOfContract.delegatecall.gas(30000)(bytes4(keccak256("helloFunction()"))) == true);
-      //if you do not want to preserve msg.sender, do:
-      //require(addressOfContract.callcode.gas(30000)(bytes4(keccak256("helloFunction()"))) == true);
+      (bool success, bytes memory data) = addressOfContract.delegatecall.gas(30000)(abi.encodeWithSignature(("helloFunction()")));
+      require(success == true);
       
   }
 
@@ -92,7 +93,7 @@ contract CallingContract {
   * @param addressOfContract - The address of the contract to interact with
   * @param msg.value - The ether the user wants to give to the contract at addressOfContract
   */
-  function SendInvocation(address addressOfContract) public payable {
+  function SendInvocation(address payable addressOfContract) public payable {
 
       //A send does not propagate exceptions, 
       //therefore a require function has been added to propagate an exception
@@ -107,7 +108,7 @@ contract CallingContract {
   * @param addressOfContract - The address of the contract to interact with
   * @param msg.value - The ether the user wants to give to the contract at addressOfContract
   */
-   function TransferInvocation(address addressOfContract) public payable {
+   function TransferInvocation(address payable addressOfContract) public payable {
       
       addressOfContract.transfer(msg.value);
       
@@ -120,20 +121,11 @@ contract CallingContract {
   * fallback function implemented - ether will still be received by it through this invocation
   * @param addressOfContract - The address of the contract to interact with
   */
-  function SelfDestructionInvocation(address addressOfContract) public payable {
+  function SelfDestructionInvocation(address payable addressOfContract) public payable {
       
       selfdestruct(addressOfContract);
-      //a deprecated version is:
-      //suicide(addressOfContract);
       
   }
   
-  
 
 }
-
-
-
-
-
-
