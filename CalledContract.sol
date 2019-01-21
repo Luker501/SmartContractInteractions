@@ -1,4 +1,4 @@
-pragma solidity ^0.4.20;
+pragma solidity ^0.5.0;
 
 /*
  * @title CalledContract
@@ -61,7 +61,7 @@ contract CalledContract {
   * only a emit log can be coded in the function.
   * @param msg.value - The ether the user wants to give to this contract
   */
-  function () public payable {
+  function () external payable {
     
     //uncomment the following two lines if you want to check that send and
     //transfer invocation do not allow extra functionality in the fallback
