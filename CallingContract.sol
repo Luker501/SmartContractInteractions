@@ -1,5 +1,5 @@
 pragma solidity ^0.4.20;
-import "browser/CalledContract.sol";
+import "./CalledContract.sol";
 
 /*
  * @title CallingContract
