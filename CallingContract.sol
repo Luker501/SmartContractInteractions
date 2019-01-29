@@ -77,7 +77,7 @@ contract CallingContract {
   * by the helloFunction() will be the one in this contract
   * @param addressOfContract - The address of the contract to interact with
   */
-  function DelegationInvocation(address payable addressOfContract) public payable {
+  function DelegationInvocation(address payable addressOfContract) public {
 
       //A delegation does not propagate exceptions, 
       //therefore a require function has been added to propagate an exception
